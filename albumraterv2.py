@@ -94,15 +94,16 @@ def create_graphic(album_cover, album_name, artist_name, tracks, ratings):
             return ImageFont.load_default()  # Fallback if not found
 
     # Use bold for title and track names
-    title_font = get_font(36, bold=True)
-    track_font = get_font(24, bold=True)
-    bold_font = get_font(24, bold=True)
+    title_font = ImageFont.truetype("arial.ttf", 36)  # Use regular Arial
+    track_font = ImageFont.truetype("arial.ttf", 20)  # Use regular Arial for track list
+    bold_font = ImageFont.truetype("arial.ttf", 24)   # Use regular Arial for bold effect
+
     
     # Artist and Album Title
     draw.rectangle([30, 30, 530, 120], fill="#FFE4B5", outline="black", width=3)
-    draw.text((40, 40), artist_name, fill="white", font=bold_font, stroke_width=2, stroke_fill="black")
+    draw.text((40, 40), artist_name, fill="white", font=title_font, stroke_width=1, stroke_fill="black")
     draw.rectangle([30, 125, 530, 165], fill="#FFFACD", outline="black", width=3)
-    draw.text((40, 130), album_name, fill="black", font=bold_font)
+    draw.text((40, 130), album_name, fill="black", font=bold_font, stroke_width=0.5, stroke_fill="black")
 
     # Album cover with border
     album_thumbnail = album_image.resize((200, 200))
@@ -123,7 +124,7 @@ def create_graphic(album_cover, album_name, artist_name, tracks, ratings):
         rating_label = rating_map[rating]
         fill_color = rating_colors[rating_label]
         draw.rectangle([30, y, 530, y + y_spacing - 5], fill=fill_color, outline="black", width=3)
-        draw.text((40, y), f"{i}. {track}", fill="black", font=track_font)
+        draw.text((40, y), f"{i}. {track}", fill="black", font=track_font, stroke_width=0.5, stroke_fill="white")
 
     # Rating Key
     key_start_y = 310
