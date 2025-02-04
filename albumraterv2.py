@@ -3,6 +3,7 @@ import streamlit as st
 from PIL import Image, ImageDraw, ImageFont, ImageFilter
 import io
 import base64
+import os
 
 # Store client ID and secret as constants
 CLIENT_ID = "58eac4fba0e84fd493f46d22bc12522c"
@@ -80,11 +81,21 @@ def create_graphic(album_cover, album_name, artist_name, tracks, ratings):
     image.paste(blurred_background, (0, 0))
     draw = ImageDraw.Draw(image)
 
-    # Font styles
-    title_font = ImageFont.truetype("arial.ttf", 36)
-    track_font = ImageFont.truetype("arialbd.ttf", 20)  # Slightly smaller font to fit more
-    bold_font = ImageFont.truetype("arialbd.ttf", 24)
-
+    # Define the path to the Arial font in your repository
+    FONT_PATH = "fonts/arial.ttf"  # Adjust this path if necessary
+    
+    def get_font(size):
+        """ Load the Arial font from the local directory or use a default font if not found """
+        if os.path.exists(FONT_PATH):
+            return ImageFont.truetype(FONT_PATH, size)
+        else:
+            return ImageFont.load_default()  # Fallback if the font isn't found
+    
+    # Apply the new font loading function
+    title_font = get_font(36)
+    track_font = get_font(24)
+    bold_font = get_font(24)
+    
     # Artist and Album Title
     draw.rectangle([30, 30, 530, 120], fill="#FFE4B5", outline="black", width=3)
     draw.text((40, 40), artist_name, fill="white", font=bold_font, stroke_width=2, stroke_fill="black")
