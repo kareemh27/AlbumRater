@@ -81,20 +81,22 @@ def create_graphic(album_cover, album_name, artist_name, tracks, ratings):
     image.paste(blurred_background, (0, 0))
     draw = ImageDraw.Draw(image)
 
-    # Define the path to the Arial font in your repository
-    FONT_PATH = "fonts/arial.ttf"  # Adjust this path if necessary
-    
-    def get_font(size):
-        """ Load the Arial font from the local directory or use a default font if not found """
-        if os.path.exists(FONT_PATH):
-            return ImageFont.truetype(FONT_PATH, size)
+    # Define the paths to the fonts
+    REGULAR_FONT_PATH = "fonts/arial.ttf"
+    BOLD_FONT_PATH = "fonts/arialbd.ttf"
+
+    def get_font(size, bold=False):
+        """ Load Arial or Arial Bold from local directory, fallback to default """
+        font_path = BOLD_FONT_PATH if bold else REGULAR_FONT_PATH
+        if os.path.exists(font_path):
+            return ImageFont.truetype(font_path, size)
         else:
-            return ImageFont.load_default()  # Fallback if the font isn't found
-    
-    # Apply the new font loading function
-    title_font = get_font(36)
-    track_font = get_font(24)
-    bold_font = get_font(24)
+            return ImageFont.load_default()  # Fallback if not found
+
+    # Use bold for title and track names
+    title_font = get_font(36, bold=True)
+    track_font = get_font(24, bold=True)
+    bold_font = get_font(24, bold=True)
     
     # Artist and Album Title
     draw.rectangle([30, 30, 530, 120], fill="#FFE4B5", outline="black", width=3)
