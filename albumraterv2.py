@@ -50,7 +50,16 @@ def fetch_album_tracks(token, artist_name, album_name):
                 tracks_data = tracks_response.json()
                 return [track["name"] for track in tracks_data["items"]], album_cover
     return [], None
-
+    
+def get_font(size, bold=False):
+    try:
+        if bold:
+            return ImageFont.truetype("arialbd.ttf", size)  # Bold font
+        else:
+            return ImageFont.truetype("arial.ttf", size)  # Regular font
+    except OSError:
+        return ImageFont.load_default()  # Use default font if Arial is missing
+        
 def create_graphic(album_cover, album_name, artist_name, tracks, ratings):
     rating_colors = {
         "Amazing": "#32CD32",
@@ -81,9 +90,9 @@ def create_graphic(album_cover, album_name, artist_name, tracks, ratings):
     draw = ImageDraw.Draw(image)
 
     # Font styles
-    title_font = ImageFont.truetype("arial.ttf", 36)
-    track_font = ImageFont.truetype("arialbd.ttf", 20)  # Slightly smaller font to fit more
-    bold_font = ImageFont.truetype("arialbd.ttf", 24)
+    title_font = get_font(36)
+    track_font = get_font(20, bold=True)
+    bold_font = get_font(24, bold=True)
 
     # Artist and Album Title
     draw.rectangle([30, 30, 530, 120], fill="#FFE4B5", outline="black", width=3)
