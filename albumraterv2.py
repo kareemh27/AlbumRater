@@ -3,6 +3,7 @@ import streamlit as st
 from PIL import Image, ImageDraw, ImageFont, ImageFilter
 import io
 import base64
+import os
 
 # Store client ID and secret as constants
 CLIENT_ID = "58eac4fba0e84fd493f46d22bc12522c"
