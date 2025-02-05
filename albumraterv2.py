@@ -51,20 +51,20 @@ def fetch_album_tracks(token, artist_name, album_name):
                 return [track["name"] for track in tracks_data["items"]], album_cover
     return [], None
     
-# Define paths to local font files inside the "fonts" directory
+# Define paths to the Arial font files
 FONT_DIR = os.path.join(os.path.dirname(__file__), "fonts")
 FONT_PATH_REGULAR = os.path.join(FONT_DIR, "arial.ttf")
 FONT_PATH_BOLD = os.path.join(FONT_DIR, "arialbd.ttf")
 
 def get_font(size, bold=False):
-    try:
-        if bold:
-            return ImageFont.truetype(FONT_PATH_BOLD, size)
-        else:
-            return ImageFont.truetype(FONT_PATH_REGULAR, size)
-    except OSError as e:
-        print(f"Font loading error: {e}")
-        return ImageFont.load_default()  # Fallback to default font
+    """Load font from the fonts directory, or fallback to a default."""
+    font_path = FONT_PATH_BOLD if bold else FONT_PATH_REGULAR
+
+    if os.path.exists(font_path):  # Check if the font file exists
+        return ImageFont.truetype(font_path, size)
+    else:
+        print(f"⚠️ Font file not found: {font_path}, using default font.")
+        return ImageFont.load_default()
         
 def create_graphic(album_cover, album_name, artist_name, tracks, ratings):
     rating_colors = {
