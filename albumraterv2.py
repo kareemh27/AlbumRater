@@ -190,6 +190,7 @@ def create_graphic(album_cover, album_name, artist_name, tracks, ratings):
 def main():
     st.title("Album Rating App")
 
+    # Initialize session state
     if "ratings" not in st.session_state:
         st.session_state["ratings"] = []
     if "tracks" not in st.session_state:
@@ -197,9 +198,11 @@ def main():
     if "album_cover" not in st.session_state:
         st.session_state["album_cover"] = None
 
+    # User Input for Artist and Album
     artist_name = st.text_input("Artist Name")
     album_name = st.text_input("Album Name")
 
+    # Fetch Songs Button
     if st.button("Fetch Songs"):
         if artist_name and album_name:
             with st.spinner("Authenticating with Spotify..."):
@@ -210,39 +213,52 @@ def main():
                         if tracks:
                             st.session_state["tracks"] = tracks
                             st.session_state["album_cover"] = album_cover
-                            st.session_state["ratings"] = [(10.0, False) for _ in tracks]  # Default ratings
+                            # Initialize ratings: (rating, is_skit, is_best, is_worst)
+                            st.session_state["ratings"] = [
+                                {"rating": 10.0, "is_skit": False, "is_best": False, "is_worst": False}
+                                for _ in tracks
+                            ]
                             st.success(f"Fetched {len(tracks)} songs successfully!")
                         else:
                             st.error("Could not fetch songs. Please check the artist and album names.")
         else:
             st.error("Please fill in all fields.")
 
-        if st.session_state["tracks"]:
-            st.write("## Rate Songs")
-            for i, track in enumerate(st.session_state["tracks"]):
-                col1, col2, col3 = st.columns([2, 1, 1])
-                with col1:
-                    is_skit = st.checkbox(f"Skit? {track}", key=f"skit_{i}")
-                with col2:
-                    is_best = st.checkbox(f"Best? {track}", key=f"best_{i}")
-                with col3:
-                    is_worst = st.checkbox(f"Worst? {track}", key=f"worst_{i}")
-                rating = 0.0 if is_skit else st.slider(f"Rate '{track}'", 0.0, 10.0, 10.0, 0.1, key=f"rating_{i}")
-                st.session_state["ratings"][i] = (rating, is_skit, is_best, is_worst)
-        
-        if st.button("Generate Graphic"):
+    # Display Rating Controls
+    if st.session_state["tracks"]:
+        st.write("## Rate Songs")
+        for i, track in enumerate(st.session_state["tracks"]):
+            col1, col2, col3 = st.columns([2, 1, 1])
+            with col1:
+                is_skit = st.checkbox(f"Skit? {track}", key=f"skit_{i}")
+                st.session_state["ratings"][i]["is_skit"] = is_skit
+            with col2:
+                is_best = st.checkbox(f"Best? {track}", key=f"best_{i}")
+                st.session_state["ratings"][i]["is_best"] = is_best
+            with col3:
+                is_worst = st.checkbox(f"Worst? {track}", key=f"worst_{i}")
+                st.session_state["ratings"][i]["is_worst"] = is_worst
+            # Slider for rating
+            rating = st.slider(
+                f"Rate '{track}'", 0.0, 10.0, 10.0, 0.1, key=f"rating_{i}",
+                disabled=is_skit  # Disable slider if marked as skit
+            )
+            st.session_state["ratings"][i]["rating"] = rating
+
+    # Generate Graphic Button
+    if st.button("Generate Graphic"):
+        try:
             graphic = create_graphic(
                 st.session_state["album_cover"],
                 album_name,
                 artist_name,
                 st.session_state["tracks"],
-                st.session_state["ratings"],
+                [(r["rating"], r["is_skit"], r["is_best"], r["is_worst"]) for r in st.session_state["ratings"]],
             )
             st.image(graphic, caption="Your Album Ratings", use_container_width=True)
+        except Exception as e:
+            st.error(f"An error occurred while generating the graphic: {e}")
 
-
-if __name__ == "__main__":
-    main()
 
 
 
