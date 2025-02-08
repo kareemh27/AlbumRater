@@ -126,8 +126,10 @@ def create_graphic(album_cover, album_name, artist_name, tracks, ratings):
     image.paste(album_thumbnail, (550, 40))
     draw.rectangle([550, 40, 750, 240], outline="black", width=3)
 
-    # Album Rating
-    avg_rating = sum(ratings) / len(ratings) if ratings else 0
+    # Calculate the average rating (excluding Skits)
+    valid_ratings = [r for r in ratings if isinstance(r, (int, float))]
+    avg_rating = sum(valid_ratings) / len(valid_ratings) if valid_ratings else 0
+    
     draw.rectangle([550, 250, 750, 300], fill="#E6E6FA", outline="black", width=3)
     draw.text((560, 260), f"Rating: {round(avg_rating, 2)}/10", fill="black", font=bold_font)
 
@@ -136,9 +138,14 @@ def create_graphic(album_cover, album_name, artist_name, tracks, ratings):
     y_spacing = max(600 // max(len(tracks), 1), 20)  # Ensuring previous block sizes remain unchanged
 
     for i, (track, rating) in enumerate(zip(tracks, ratings), start=1):
+        if isinstance(rating, tuple):  # Unpack tuple if needed
+            rating = rating[0]  # Extract the numerical rating
+
         y = tracklist_start_y + i * y_spacing
-        rating_label = rating_map[rating]
+        rating_label = rating_map.get(rating, "Skit")  # Default to "Skit" if rating is 0
         fill_color = rating_colors[rating_label]
+
+        # Draw the track block
         draw.rectangle([30, y, 530, y + y_spacing - 5], fill=fill_color, outline="black", width=3)
 
         # Draw song name
