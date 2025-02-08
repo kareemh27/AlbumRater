@@ -115,22 +115,12 @@ def create_graphic(album_cover, album_name, artist_name, tracks, ratings):
     title_font = get_font(36)
     track_font = get_font(20, bold=True)
     bold_font = get_font(24, bold=True)
-    
+
     # Artist and Album Title
     draw.rectangle([30, 30, 530, 120], fill="#FFE4B5", outline="black", width=3)
     draw.text((40, 40), artist_name, fill="white", font=bold_font, stroke_width=2, stroke_fill="black")
     draw.rectangle([30, 125, 530, 165], fill="#FFFACD", outline="black", width=3)
     draw.text((40, 130), album_name, fill="black", font=bold_font)
-
-    # Album cover with border
-    album_thumbnail = album_image.resize((200, 200))
-    image.paste(album_thumbnail, (550, 40))
-    draw.rectangle([550, 40, 750, 240], outline="black", width=3)
-
-    # Album Rating
-    avg_rating = sum(ratings) / len(ratings) if ratings else 0
-    draw.rectangle([550, 250, 750, 300], fill="#E6E6FA", outline="black", width=3)
-    draw.text((560, 260), f"Rating: {round(avg_rating, 2)}/10", fill="black", font=bold_font)
 
     # Adjust spacing dynamically based on number of tracks
     tracklist_start_y = 170  # Starting y-position for tracklist
@@ -138,14 +128,13 @@ def create_graphic(album_cover, album_name, artist_name, tracks, ratings):
     num_tracks = max(len(tracks), 1)  # Avoid division by zero
     y_spacing = min(max(total_space // num_tracks, 40), 80)  # Ensure spacing is visually appealing
 
-# Draw each track with dynamic spacing
-for i, (track, rating) in enumerate(zip(tracks, ratings), start=1):
-    y = tracklist_start_y + (i - 1) * y_spacing
-    rating_label = rating_map[rating]
-    fill_color = rating_colors[rating_label]
-    draw.rectangle([30, y, 530, y + y_spacing - 5], fill=fill_color, outline="black", width=3)
-    draw.text((40, y), f"{i}. {track}", fill="black", font=track_font)
-
+    # Draw each track with dynamic spacing
+    for i, (track, rating) in enumerate(zip(tracks, ratings), start=1):
+        y = tracklist_start_y + (i - 1) * y_spacing
+        rating_label = rating_map[rating]
+        fill_color = rating_colors[rating_label]
+        draw.rectangle([30, y, 530, y + y_spacing - 5], fill=fill_color, outline="black", width=3)
+        draw.text((40, y), f"{i}. {track}", fill="black", font=track_font)
 
     # Rating Key
     key_start_y = 310
@@ -156,11 +145,11 @@ for i, (track, rating) in enumerate(zip(tracks, ratings), start=1):
             draw.text((560, key_start_y + 5), f"{label}: {value}", fill="black", font=bold_font)
         key_start_y += 40
 
-    # Convert to streamlit compatible format
+   # Convert to streamlit compatible format
     buffer = io.BytesIO()
     image.save(buffer, format="PNG")
     buffer.seek(0)
-    return buffer
+    return buffer  # Ensure this is inside the function
 
 def main():
     st.title("Album Rating App")
