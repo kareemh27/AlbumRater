@@ -83,22 +83,28 @@ def get_font(size, bold=False):
         
 def create_graphic(album_cover, album_name, artist_name, tracks, ratings):
     rating_colors = {
-        "Amazing": "#32CD32",
-        "Great": "#00BFFF",
-        "Good": "#FFD700",
-        "Meh": "#FFA500",
-        "Bad": "#FF4500",
-        "Skit": "#808080",
+        "Amazing": "#32CD32",  # Green (9.1-10.0)
+        "Great": "#00BFFF",    # Blue (7.1-9.0)
+        "Good": "#FFD700",     # Yellow (6.1-7.0)
+        "Meh": "#FFA500",      # Orange (3.1-6.0)
+        "Bad": "#FF4500",      # Red (0-3.0)
+        "Skit": "#808080",     # Gray (Skit)
     }
 
-    rating_map = {
-        10: "Amazing",
-        8: "Great",
-        6: "Good",
-        4: "Meh",
-        2: "Bad",
-        0: "Skit",
-    }
+    def get_rating_label(rating, is_skit):
+        """Determine the rating label based on the score or if it's marked as a skit."""
+        if is_skit:
+            return "Skit"
+        elif rating <= 3.0:
+            return "Bad"
+        elif rating <= 6.0:
+            return "Meh"
+        elif rating <= 7.0:
+            return "Good"
+        elif rating <= 9.0:
+            return "Great"
+        else:
+            return "Amazing"
 
     # Load album cover and blur it
     response = requests.get(album_cover)
@@ -114,7 +120,7 @@ def create_graphic(album_cover, album_name, artist_name, tracks, ratings):
     title_font = get_font(36)
     track_font = get_font(20, bold=True)
     bold_font = get_font(24, bold=True)
-    
+
     # Artist and Album Title
     draw.rectangle([30, 30, 530, 120], fill="#FFE4B5", outline="black", width=3)
     draw.text((40, 40), artist_name, fill="white", font=bold_font, stroke_width=2, stroke_fill="black")
@@ -127,28 +133,28 @@ def create_graphic(album_cover, album_name, artist_name, tracks, ratings):
     draw.rectangle([550, 40, 750, 240], outline="black", width=3)
 
     # Album Rating
-    avg_rating = sum(ratings) / len(ratings) if ratings else 0
+    avg_rating = sum(rating for rating, is_skit in ratings if not is_skit) / max(
+        len([r for r, is_skit in ratings if not is_skit]), 1
+    )
     draw.rectangle([550, 250, 750, 300], fill="#E6E6FA", outline="black", width=3)
     draw.text((560, 260), f"Rating: {round(avg_rating, 2)}/10", fill="black", font=bold_font)
 
     # Adjust spacing dynamically based on number of tracks
     tracklist_start_y = 170
-    y_spacing = max(600 // max(len(tracks), 1), 20)  # Adjusts dynamically for up to 30 tracks
+    y_spacing = max(600 // max(len(tracks), 1), 20)
 
-    for i, (track, rating) in enumerate(zip(tracks, ratings), start=1):
+    for i, (track, (rating, is_skit)) in enumerate(zip(tracks, ratings), start=1):
         y = tracklist_start_y + i * y_spacing
-        rating_label = rating_map[rating]
+        rating_label = get_rating_label(rating, is_skit)
         fill_color = rating_colors[rating_label]
         draw.rectangle([30, y, 530, y + y_spacing - 5], fill=fill_color, outline="black", width=3)
-        draw.text((40, y), f"{i}. {track}", fill="black", font=track_font)
+        draw.text((40, y), f"{i}. {track} ({rating_label})", fill="black", font=track_font)
 
     # Rating Key
     key_start_y = 310
     for label, color in rating_colors.items():
-        value = next((k for k, v in rating_map.items() if v == label), None)
         draw.rectangle([550, key_start_y, 750, key_start_y + 30], fill=color, outline="black", width=3)
-        if value is not None:
-            draw.text((560, key_start_y + 5), f"{label}: {value}", fill="black", font=bold_font)
+        draw.text((560, key_start_y + 5), label, fill="black", font=bold_font)
         key_start_y += 40
 
     # Convert to streamlit compatible format
@@ -161,12 +167,12 @@ def create_graphic(album_cover, album_name, artist_name, tracks, ratings):
 def main():
     st.title("Album Rating App")
 
-    if 'ratings' not in st.session_state:
-        st.session_state['ratings'] = []
-    if 'tracks' not in st.session_state:
-        st.session_state['tracks'] = []
-    if 'album_cover' not in st.session_state:
-        st.session_state['album_cover'] = None
+    if "ratings" not in st.session_state:
+        st.session_state["ratings"] = []
+    if "tracks" not in st.session_state:
+        st.session_state["tracks"] = []
+    if "album_cover" not in st.session_state:
+        st.session_state["album_cover"] = None
 
     artist_name = st.text_input("Artist Name")
     album_name = st.text_input("Album Name")
@@ -179,23 +185,35 @@ def main():
                     with st.spinner("Fetching songs..."):
                         tracks, album_cover = fetch_album_tracks(token, artist_name, album_name)
                         if tracks:
-                            st.session_state['tracks'] = tracks
-                            st.session_state['album_cover'] = album_cover
-                            st.session_state['ratings'] = [10 for _ in tracks]
+                            st.session_state["tracks"] = tracks
+                            st.session_state["album_cover"] = album_cover
+                            st.session_state["ratings"] = [(10.0, False) for _ in tracks]  # Default ratings
                             st.success(f"Fetched {len(tracks)} songs successfully!")
                         else:
                             st.error("Could not fetch songs. Please check the artist and album names.")
         else:
             st.error("Please fill in all fields.")
 
-    if st.session_state['tracks']:
+    if st.session_state["tracks"]:
         st.write("## Rate Songs")
-        for i, track in enumerate(st.session_state['tracks']):
-            st.session_state['ratings'][i] = st.selectbox(f"Rate '{track}'", [10, 8, 6, 4, 2, 0], key=f"rating_{i}")
+        for i, track in enumerate(st.session_state["tracks"]):
+            col1, col2 = st.columns([3, 1])
+            with col1:
+                is_skit = st.checkbox(f"Skit: {track}", key=f"skit_{i}")
+            with col2:
+                rating = 0.0 if is_skit else st.slider(f"Rate '{track}'", 0.0, 10.0, 10.0, 0.1, key=f"rating_{i}")
+            st.session_state["ratings"][i] = (rating, is_skit)
 
         if st.button("Generate Graphic"):
-            graphic = create_graphic(st.session_state['album_cover'], album_name, artist_name, st.session_state['tracks'], st.session_state['ratings'])
+            graphic = create_graphic(
+                st.session_state["album_cover"],
+                album_name,
+                artist_name,
+                st.session_state["tracks"],
+                st.session_state["ratings"],
+            )
             st.image(graphic, caption="Your Album Ratings", use_container_width=True)
+
 
 if __name__ == "__main__":
     main()
