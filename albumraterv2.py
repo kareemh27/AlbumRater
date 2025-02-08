@@ -148,7 +148,7 @@ def create_graphic(album_cover, album_name, artist_name, tracks, ratings):
         rating_label = get_rating_label(rating, is_skit)
         fill_color = rating_colors[rating_label]
         draw.rectangle([30, y, 530, y + y_spacing - 5], fill=fill_color, outline="black", width=3)
-        draw.text((40, y), f"{i}. {track} ({rating_label})", fill="black", font=track_font)
+        draw.text((40, y), f"{i}. {track}", fill="black", font=track_font)
 
     # Rating Key
     key_start_y = 310
