@@ -31,13 +31,13 @@ def get_spotify_token():
 import re  # Import regex module for text cleaning
 
 def clean_track_name(track_name):
-    """Removes featured and with artists from track names."""
+    """Removes featured and with artists from track names without removing valid 'with' in titles."""
     track_name = re.sub(r"\(feat[^\)]+\)", "", track_name, flags=re.IGNORECASE)  # Remove (feat Artist)
-    track_name = re.sub(r"\(with[^\)]+\)", "", track_name, flags=re.IGNORECASE)  # Remove (with Artist)
+    track_name = re.sub(r"\(with [^\)]+\)", "", track_name, flags=re.IGNORECASE)  # Remove (with Artist)
     track_name = re.sub(r"\[feat[^\]]+\]", "", track_name, flags=re.IGNORECASE)  # Remove [feat Artist]
-    track_name = re.sub(r"\[with[^\]]+\]", "", track_name, flags=re.IGNORECASE)  # Remove [with Artist]
-    track_name = re.sub(r"feat[^\)]+$", "", track_name, flags=re.IGNORECASE)    # Remove feat Artist at the end
-    track_name = re.sub(r"with[^\)]+$", "", track_name, flags=re.IGNORECASE)    # Remove with Artist at the end
+    track_name = re.sub(r"\[with [^\]]+\]", "", track_name, flags=re.IGNORECASE)  # Remove [with Artist]
+    track_name = re.sub(r"feat[^\)]+$", "", track_name, flags=re.IGNORECASE)     # Remove feat Artist at the end
+    track_name = re.sub(r"with [^\)]+$", "", track_name, flags=re.IGNORECASE)     # Remove with Artist at the end
     return track_name.strip()
 
 def fetch_album_tracks(token, artist_name, album_name):
