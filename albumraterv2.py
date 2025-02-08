@@ -39,6 +39,7 @@ def clean_track_name(track_name):
     track_name = re.sub(r"feat\..*", "", track_name, flags=re.IGNORECASE)  # Remove "feat. Artist" at the end
     track_name = re.sub(r"ft\..*", "", track_name, flags=re.IGNORECASE)  # Remove "ft. Artist" at the end
     track_name = re.sub(r"\(feat .*?\)", "", track_name, flags=re.IGNORECASE)  # Remove (feat Artist)
+    track_name = re.sub(r"\(with .*?\)", "", track_name, flags=re.IGNORECASE)  # Remove (with Artist)
     return track_name.strip()
 
 def fetch_album_tracks(token, artist_name, album_name):
