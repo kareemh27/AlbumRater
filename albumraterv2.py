@@ -83,28 +83,22 @@ def get_font(size, bold=False):
         
 def create_graphic(album_cover, album_name, artist_name, tracks, ratings):
     rating_colors = {
-        "Amazing": "#32CD32",  # Green
-        "Great": "#00BFFF",    # Blue
-        "Good": "#FFD700",     # Yellow
-        "Meh": "#FFA500",      # Orange
-        "Bad": "#FF4500",      # Red
-        "Skit": "#808080",     # Gray
+        "Amazing": "#32CD32",
+        "Great": "#00BFFF",
+        "Good": "#FFD700",
+        "Meh": "#FFA500",
+        "Bad": "#FF4500",
+        "Skit": "#808080",
     }
 
-    def get_rating_label(rating, is_skit):
-        """Determine the rating label based on the score or if it's marked as a skit."""
-        if is_skit:
-            return "Skit"
-        elif rating <= 3.0:
-            return "Bad"
-        elif rating <= 6.0:
-            return "Meh"
-        elif rating <= 7.0:
-            return "Good"
-        elif rating <= 9.0:
-            return "Great"
-        else:
-            return "Amazing"
+    rating_map = {
+        10: "Amazing",
+        8: "Great",
+        6: "Good",
+        4: "Meh",
+        2: "Bad",
+        0: "Skit",
+    }
 
     # Load album cover and blur it
     response = requests.get(album_cover)
@@ -133,36 +127,36 @@ def create_graphic(album_cover, album_name, artist_name, tracks, ratings):
     draw.rectangle([550, 40, 750, 240], outline="black", width=3)
 
     # Album Rating
-    avg_rating = sum(rating for rating, is_skit, _, _ in ratings if not is_skit) / max(
-        len([r for r, is_skit, _, _ in ratings if not is_skit]), 1
-    )
+    avg_rating = sum(ratings) / len(ratings) if ratings else 0
     draw.rectangle([550, 250, 750, 300], fill="#E6E6FA", outline="black", width=3)
     draw.text((560, 260), f"Rating: {round(avg_rating, 2)}/10", fill="black", font=bold_font)
 
-    # Tracklist with previous sizing
-    tracklist_start_y = 310
-    y_spacing = max(600 // max(len(tracks), 1), 20)
+    # Adjust spacing dynamically based on number of tracks
+    tracklist_start_y = 170
+    y_spacing = max(600 // max(len(tracks), 1), 20)  # Ensuring previous block sizes remain unchanged
 
-    for i, (track, (rating, is_skit, is_best, is_worst)) in enumerate(zip(tracks, ratings), start=1):
+    for i, (track, rating) in enumerate(zip(tracks, ratings), start=1):
         y = tracklist_start_y + i * y_spacing
-        rating_label = get_rating_label(rating, is_skit)
+        rating_label = rating_map[rating]
         fill_color = rating_colors[rating_label]
-
-        # Draw the track block
         draw.rectangle([30, y, 530, y + y_spacing - 5], fill=fill_color, outline="black", width=3)
+
+        # Draw song name
         draw.text((40, y), f"{i}. {track}", fill="black", font=track_font)
 
-        # If marked as Best or Worst, add the label inside the track block
-        if is_best:
+        # Add Best or Worst Song label if applicable
+        if rating == 10:
             draw.text((400, y), "Best Song", fill="black", font=bold_font)
-        if is_worst:
+        elif rating == 2:
             draw.text((400, y), "Worst Song", fill="black", font=bold_font)
 
     # Rating Key
-    key_start_y = 310 + (len(tracks) * y_spacing) + 20
+    key_start_y = 310
     for label, color in rating_colors.items():
+        value = next((k for k, v in rating_map.items() if v == label), None)
         draw.rectangle([550, key_start_y, 750, key_start_y + 30], fill=color, outline="black", width=3)
-        draw.text((560, key_start_y + 5), label, fill="black", font=bold_font)
+        if value is not None:
+            draw.text((560, key_start_y + 5), f"{label}: {value}", fill="black", font=bold_font)
         key_start_y += 40
 
     # Convert to streamlit compatible format
@@ -170,6 +164,7 @@ def create_graphic(album_cover, album_name, artist_name, tracks, ratings):
     image.save(buffer, format="PNG")
     buffer.seek(0)
     return buffer
+
 
 def main():
     st.title("Album Rating App")
