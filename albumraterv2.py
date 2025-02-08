@@ -139,7 +139,7 @@ def create_graphic(album_cover, album_name, artist_name, tracks, ratings):
     draw.rectangle([550, 250, 750, 300], fill="#E6E6FA", outline="black", width=3)
     draw.text((560, 260), f"Rating: {round(avg_rating, 2)}/10", fill="black", font=bold_font)
 
-    # Adjust spacing dynamically based on number of tracks
+    # Tracklist with fixed block sizes
     tracklist_start_y = 310
     y_spacing = max(600 // max(len(tracks), 1), 20)
 
@@ -166,19 +166,22 @@ def create_graphic(album_cover, album_name, artist_name, tracks, ratings):
         draw.text((560, key_start_y + 5), label, fill="black", font=bold_font)
         key_start_y += 40
 
-    # Best and Worst Songs Section
+    # Best Songs Section
     if best_songs:
-        draw.text((550, key_start_y), "Best Songs:", fill="black", font=bold_font)
-        key_start_y += 30
+        draw.rectangle([30, key_start_y, 530, key_start_y + 30], fill="#B0E57C", outline="black", width=3)
+        draw.text((40, key_start_y + 5), "Best Songs:", fill="black", font=bold_font)
+        key_start_y += 40
         for song in best_songs:
-            draw.text((560, key_start_y), f"- {song}", fill="black", font=track_font)
+            draw.text((40, key_start_y), f"- {song}", fill="black", font=track_font)
             key_start_y += 25
 
+    # Worst Songs Section
     if worst_songs:
-        draw.text((550, key_start_y), "Worst Songs:", fill="black", font=bold_font)
-        key_start_y += 30
+        draw.rectangle([30, key_start_y, 530, key_start_y + 30], fill="#FF9999", outline="black", width=3)
+        draw.text((40, key_start_y + 5), "Worst Songs:", fill="black", font=bold_font)
+        key_start_y += 40
         for song in worst_songs:
-            draw.text((560, key_start_y), f"- {song}", fill="black", font=track_font)
+            draw.text((40, key_start_y), f"- {song}", fill="black", font=track_font)
             key_start_y += 25
 
     # Convert to streamlit compatible format
