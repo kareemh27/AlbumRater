@@ -133,15 +133,19 @@ def create_graphic(album_cover, album_name, artist_name, tracks, ratings):
     draw.text((560, 260), f"Rating: {round(avg_rating, 2)}/10", fill="black", font=bold_font)
 
     # Adjust spacing dynamically based on number of tracks
-    tracklist_start_y = 170
-    y_spacing = max(600 // max(len(tracks), 1), 20)  # Adjusts dynamically for up to 30 tracks
+    tracklist_start_y = 170  # Starting y-position for tracklist
+    total_space = 600  # Total vertical space available for the tracklist
+    num_tracks = max(len(tracks), 1)  # Avoid division by zero
+    y_spacing = min(max(total_space // num_tracks, 40), 80)  # Ensure spacing is visually appealing
 
-    for i, (track, rating) in enumerate(zip(tracks, ratings), start=1):
-        y = tracklist_start_y + i * y_spacing
-        rating_label = rating_map[rating]
-        fill_color = rating_colors[rating_label]
-        draw.rectangle([30, y, 530, y + y_spacing - 5], fill=fill_color, outline="black", width=3)
-        draw.text((40, y), f"{i}. {track}", fill="black", font=track_font)
+# Draw each track with dynamic spacing
+for i, (track, rating) in enumerate(zip(tracks, ratings), start=1):
+    y = tracklist_start_y + (i - 1) * y_spacing
+    rating_label = rating_map[rating]
+    fill_color = rating_colors[rating_label]
+    draw.rectangle([30, y, 530, y + y_spacing - 5], fill=fill_color, outline="black", width=3)
+    draw.text((40, y), f"{i}. {track}", fill="black", font=track_font)
+
 
     # Rating Key
     key_start_y = 310
