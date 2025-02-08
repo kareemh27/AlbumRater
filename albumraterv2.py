@@ -83,12 +83,12 @@ def get_font(size, bold=False):
         
 def create_graphic(album_cover, album_name, artist_name, tracks, ratings):
     rating_colors = {
-        "Amazing": "#32CD32",
-        "Great": "#00BFFF",
-        "Good": "#FFD700",
-        "Meh": "#FFA500",
-        "Bad": "#FF4500",
-        "Skit": "#808080",
+        "Amazing": "#32CD32",  # Green
+        "Great": "#00BFFF",    # Blue
+        "Good": "#FFD700",     # Yellow
+        "Meh": "#FFA500",      # Orange
+        "Bad": "#FF4500",      # Red
+        "Skit": "#808080",     # Gray
     }
 
     rating_map = {
@@ -114,7 +114,7 @@ def create_graphic(album_cover, album_name, artist_name, tracks, ratings):
     title_font = get_font(36)
     track_font = get_font(20, bold=True)
     bold_font = get_font(24, bold=True)
-    
+
     # Artist and Album Title
     draw.rectangle([30, 30, 530, 120], fill="#FFE4B5", outline="black", width=3)
     draw.text((40, 40), artist_name, fill="white", font=bold_font, stroke_width=2, stroke_fill="black")
@@ -131,19 +131,25 @@ def create_graphic(album_cover, album_name, artist_name, tracks, ratings):
     draw.rectangle([550, 250, 750, 300], fill="#E6E6FA", outline="black", width=3)
     draw.text((560, 260), f"Rating: {round(avg_rating, 2)}/10", fill="black", font=bold_font)
 
-    # Adjust spacing dynamically based on number of tracks
-    tracklist_start_y = 170
-    y_spacing = max(600 // max(len(tracks), 1), 20)  # Adjusts dynamically for up to 30 tracks
+    # Single block for all songs
+    song_block_y_start = 170
+    song_block_height = 450
+    draw.rectangle(
+        [30, song_block_y_start, 530, song_block_y_start + song_block_height],
+        fill="#F0F8FF",  # Light blue background for contrast
+        outline="black",
+        width=3,
+    )
 
+    # Draw each track name with font colored by rating
     for i, (track, rating) in enumerate(zip(tracks, ratings), start=1):
-        y = tracklist_start_y + i * y_spacing
         rating_label = rating_map[rating]
-        fill_color = rating_colors[rating_label]
-        draw.rectangle([30, y, 530, y + y_spacing - 5], fill=fill_color, outline="black", width=3)
-        draw.text((40, y), f"{i}. {track}", fill="black", font=track_font)
+        font_color = rating_colors[rating_label]
+        y = song_block_y_start + 10 + i * 25  # Dynamic spacing for track names
+        draw.text((40, y), f"{i}. {track}", fill=font_color, font=track_font)
 
     # Rating Key
-    key_start_y = 310
+    key_start_y = 650
     for label, color in rating_colors.items():
         value = next((k for k, v in rating_map.items() if v == label), None)
         draw.rectangle([550, key_start_y, 750, key_start_y + 30], fill=color, outline="black", width=3)
@@ -156,6 +162,7 @@ def create_graphic(album_cover, album_name, artist_name, tracks, ratings):
     image.save(buffer, format="PNG")
     buffer.seek(0)
     return buffer
+
 
 def main():
     st.title("Album Rating App")
