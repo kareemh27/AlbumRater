@@ -83,12 +83,12 @@ def get_font(size, bold=False):
         
 def create_graphic(album_cover, album_name, artist_name, tracks, ratings):
     rating_colors = {
-        "Amazing": "#32CD32",  # Green (9.1-10.0)
-        "Great": "#00BFFF",    # Blue (7.1-9.0)
-        "Good": "#FFD700",     # Yellow (6.1-7.0)
-        "Meh": "#FFA500",      # Orange (3.1-6.0)
-        "Bad": "#FF4500",      # Red (0-3.0)
-        "Skit": "#808080",     # Gray (Skit)
+        "Amazing": "#32CD32",  # Green
+        "Great": "#00BFFF",    # Blue
+        "Good": "#FFD700",     # Yellow
+        "Meh": "#FFA500",      # Orange
+        "Bad": "#FF4500",      # Red
+        "Skit": "#808080",     # Gray
     }
 
     def get_rating_label(rating, is_skit):
@@ -140,15 +140,24 @@ def create_graphic(album_cover, album_name, artist_name, tracks, ratings):
     draw.text((560, 260), f"Rating: {round(avg_rating, 2)}/10", fill="black", font=bold_font)
 
     # Adjust spacing dynamically based on number of tracks
-    tracklist_start_y = 170
+    tracklist_start_y = 310
     y_spacing = max(600 // max(len(tracks), 1), 20)
 
-    for i, (track, (rating, is_skit)) in enumerate(zip(tracks, ratings), start=1):
+    best_songs = []
+    worst_songs = []
+
+    for i, (track, (rating, is_skit, is_best, is_worst)) in enumerate(zip(tracks, ratings), start=1):
         y = tracklist_start_y + i * y_spacing
         rating_label = get_rating_label(rating, is_skit)
         fill_color = rating_colors[rating_label]
         draw.rectangle([30, y, 530, y + y_spacing - 5], fill=fill_color, outline="black", width=3)
         draw.text((40, y), f"{i}. {track}", fill="black", font=track_font)
+
+        # Collect best and worst songs
+        if is_best:
+            best_songs.append(track)
+        if is_worst:
+            worst_songs.append(track)
 
     # Rating Key
     key_start_y = 310
@@ -157,12 +166,26 @@ def create_graphic(album_cover, album_name, artist_name, tracks, ratings):
         draw.text((560, key_start_y + 5), label, fill="black", font=bold_font)
         key_start_y += 40
 
+    # Best and Worst Songs Section
+    if best_songs:
+        draw.text((550, key_start_y), "Best Songs:", fill="black", font=bold_font)
+        key_start_y += 30
+        for song in best_songs:
+            draw.text((560, key_start_y), f"- {song}", fill="black", font=track_font)
+            key_start_y += 25
+
+    if worst_songs:
+        draw.text((550, key_start_y), "Worst Songs:", fill="black", font=bold_font)
+        key_start_y += 30
+        for song in worst_songs:
+            draw.text((560, key_start_y), f"- {song}", fill="black", font=track_font)
+            key_start_y += 25
+
     # Convert to streamlit compatible format
     buffer = io.BytesIO()
     image.save(buffer, format="PNG")
     buffer.seek(0)
     return buffer
-
 
 def main():
     st.title("Album Rating App")
@@ -194,16 +217,19 @@ def main():
         else:
             st.error("Please fill in all fields.")
 
-    if st.session_state["tracks"]:
-        st.write("## Rate Songs")
-        for i, track in enumerate(st.session_state["tracks"]):
-            col1, col2 = st.columns([3, 1])
-            with col1:
-                is_skit = st.checkbox(f"Skit: {track}", key=f"skit_{i}")
-            with col2:
+        if st.session_state["tracks"]:
+            st.write("## Rate Songs")
+            for i, track in enumerate(st.session_state["tracks"]):
+                col1, col2, col3 = st.columns([2, 1, 1])
+                with col1:
+                    is_skit = st.checkbox(f"Skit? {track}", key=f"skit_{i}")
+                with col2:
+                    is_best = st.checkbox(f"Best? {track}", key=f"best_{i}")
+                with col3:
+                    is_worst = st.checkbox(f"Worst? {track}", key=f"worst_{i}")
                 rating = 0.0 if is_skit else st.slider(f"Rate '{track}'", 0.0, 10.0, 10.0, 0.1, key=f"rating_{i}")
-            st.session_state["ratings"][i] = (rating, is_skit)
-
+                st.session_state["ratings"][i] = (rating, is_skit, is_best, is_worst)
+        
         if st.button("Generate Graphic"):
             graphic = create_graphic(
                 st.session_state["album_cover"],
