@@ -139,25 +139,24 @@ def create_graphic(album_cover, album_name, artist_name, tracks, ratings):
     draw.rectangle([550, 250, 750, 300], fill="#E6E6FA", outline="black", width=3)
     draw.text((560, 260), f"Rating: {round(avg_rating, 2)}/10", fill="black", font=bold_font)
 
-    # Tracklist with fixed block sizes
+    # Tracklist with previous sizing
     tracklist_start_y = 310
     y_spacing = max(600 // max(len(tracks), 1), 20)
-
-    best_songs = []
-    worst_songs = []
 
     for i, (track, (rating, is_skit, is_best, is_worst)) in enumerate(zip(tracks, ratings), start=1):
         y = tracklist_start_y + i * y_spacing
         rating_label = get_rating_label(rating, is_skit)
         fill_color = rating_colors[rating_label]
+
+        # Draw the track block
         draw.rectangle([30, y, 530, y + y_spacing - 5], fill=fill_color, outline="black", width=3)
         draw.text((40, y), f"{i}. {track}", fill="black", font=track_font)
 
-        # Collect best and worst songs
+        # If marked as Best or Worst, add the label inside the track block
         if is_best:
-            best_songs.append(track)
+            draw.text((400, y), "Best Song", fill="black", font=bold_font)
         if is_worst:
-            worst_songs.append(track)
+            draw.text((400, y), "Worst Song", fill="black", font=bold_font)
 
     # Rating Key
     key_start_y = 310 + (len(tracks) * y_spacing) + 20
@@ -165,24 +164,6 @@ def create_graphic(album_cover, album_name, artist_name, tracks, ratings):
         draw.rectangle([550, key_start_y, 750, key_start_y + 30], fill=color, outline="black", width=3)
         draw.text((560, key_start_y + 5), label, fill="black", font=bold_font)
         key_start_y += 40
-
-    # Best Songs Section
-    if best_songs:
-        draw.rectangle([30, key_start_y, 530, key_start_y + 30], fill="#B0E57C", outline="black", width=3)
-        draw.text((40, key_start_y + 5), "Best Songs:", fill="black", font=bold_font)
-        key_start_y += 40
-        for song in best_songs:
-            draw.text((40, key_start_y), f"- {song}", fill="black", font=track_font)
-            key_start_y += 25
-
-    # Worst Songs Section
-    if worst_songs:
-        draw.rectangle([30, key_start_y, 530, key_start_y + 30], fill="#FF9999", outline="black", width=3)
-        draw.text((40, key_start_y + 5), "Worst Songs:", fill="black", font=bold_font)
-        key_start_y += 40
-        for song in worst_songs:
-            draw.text((40, key_start_y), f"- {song}", fill="black", font=track_font)
-            key_start_y += 25
 
     # Convert to streamlit compatible format
     buffer = io.BytesIO()
