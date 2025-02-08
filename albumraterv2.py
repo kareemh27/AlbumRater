@@ -132,7 +132,7 @@ def create_graphic(album_cover, album_name, artist_name, tracks, ratings):
     draw.text((560, 260), f"Rating: {round(avg_rating, 2)}/10", fill="black", font=bold_font)
 
     # Adjust box height and spacing based on track count
-    tracklist_start_y = 170
+    tracklist_start_y = 310  # Start position for the tracklist
     num_tracks = len(tracks)
 
     if num_tracks <= 10:
@@ -149,7 +149,11 @@ def create_graphic(album_cover, album_name, artist_name, tracks, ratings):
         box_height = max(total_space // num_tracks, 15)
         spacing = 2
 
-    # Draw each track with adjusted box height and spacing
+    # Ensure all tracks fit within the graphic
+    max_tracklist_height = tracklist_start_y + (num_tracks * (box_height + spacing))
+    if max_tracklist_height > 700:  # Adjust tracklist start to avoid overflow
+        tracklist_start_y = 310
+
     for i, (track, rating) in enumerate(zip(tracks, ratings), start=1):
         y = tracklist_start_y + (i - 1) * (box_height + spacing)
         rating_label = rating_map[rating]
@@ -157,8 +161,11 @@ def create_graphic(album_cover, album_name, artist_name, tracks, ratings):
         draw.rectangle([30, y, 530, y + box_height], fill=fill_color, outline="black", width=3)
         draw.text((40, y + 5), f"{i}. {track}", fill="black", font=track_font)
 
-    # Rating Key
-    key_start_y = tracklist_start_y + (num_tracks * (box_height + spacing)) + 20
+    # Fixed Rating Key Position (directly below album rating)
+    key_start_y = 310 + (num_tracks * (box_height + spacing)) + 10
+    if key_start_y + 180 > 800:  # Ensure the key fits within the graphic
+        key_start_y = 750 - 180  # Adjust to fit if needed
+
     for label, color in rating_colors.items():
         value = next((k for k, v in rating_map.items() if v == label), None)
         draw.rectangle([550, key_start_y, 750, key_start_y + 30], fill=color, outline="black", width=3)
@@ -171,6 +178,7 @@ def create_graphic(album_cover, album_name, artist_name, tracks, ratings):
     image.save(buffer, format="PNG")
     buffer.seek(0)
     return buffer
+
 
 
 
