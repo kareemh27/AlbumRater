@@ -131,27 +131,34 @@ def create_graphic(album_cover, album_name, artist_name, tracks, ratings):
     draw.rectangle([550, 250, 750, 300], fill="#E6E6FA", outline="black", width=3)
     draw.text((560, 260), f"Rating: {round(avg_rating, 2)}/10", fill="black", font=bold_font)
 
-    # Adjust spacing for track boxes
+    # Adjust box height and spacing based on track count
     tracklist_start_y = 170
     num_tracks = len(tracks)
-    total_space = 600  # Total vertical space available for the tracklist
 
-    if num_tracks <= 24:
-        # Fixed height for each box if 24 songs or fewer
+    if num_tracks <= 10:
+        box_height = 40
+        spacing = 5
+    elif num_tracks <= 24:
+        box_height = 30
+        spacing = 4
+    elif num_tracks <= 30:
         box_height = 25
+        spacing = 3
     else:
-        # Dynamically calculate height to fit all songs for albums with more than 24 songs
+        total_space = 600  # Total vertical space for tracks
         box_height = max(total_space // num_tracks, 15)
+        spacing = 2
 
+    # Draw each track with adjusted box height and spacing
     for i, (track, rating) in enumerate(zip(tracks, ratings), start=1):
-        y = tracklist_start_y + (i - 1) * box_height
+        y = tracklist_start_y + (i - 1) * (box_height + spacing)
         rating_label = rating_map[rating]
         fill_color = rating_colors[rating_label]
-        draw.rectangle([30, y, 530, y + box_height - 2], fill=fill_color, outline="black", width=3)
+        draw.rectangle([30, y, 530, y + box_height], fill=fill_color, outline="black", width=3)
         draw.text((40, y + 5), f"{i}. {track}", fill="black", font=track_font)
 
     # Rating Key
-    key_start_y = 310
+    key_start_y = tracklist_start_y + (num_tracks * (box_height + spacing)) + 20
     for label, color in rating_colors.items():
         value = next((k for k, v in rating_map.items() if v == label), None)
         draw.rectangle([550, key_start_y, 750, key_start_y + 30], fill=color, outline="black", width=3)
