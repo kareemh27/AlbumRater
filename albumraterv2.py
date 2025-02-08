@@ -81,7 +81,7 @@ def get_font(size, bold=False):
         print(f"⚠️ Font file not found: {font_path}, using default font.")
         return ImageFont.load_default()
         
-def create_graphic(album_cover, album_name, artist_name, tracks, ratings):
+ddef create_graphic(album_cover, album_name, artist_name, tracks, ratings):
     rating_colors = {
         "Amazing": "#32CD32",  # Green
         "Great": "#00BFFF",    # Blue
@@ -131,10 +131,10 @@ def create_graphic(album_cover, album_name, artist_name, tracks, ratings):
     draw.rectangle([550, 250, 750, 300], fill="#E6E6FA", outline="black", width=3)
     draw.text((560, 260), f"Rating: {round(avg_rating, 2)}/10", fill="black", font=bold_font)
 
-    # Adjust box height and spacing based on track count
-    tracklist_start_y = 310  # Start position for the tracklist
+    # Tracklist Area
+    tracklist_start_y = 310
     num_tracks = len(tracks)
-
+    total_track_area = 400  # Fixed space for the tracklist area
     if num_tracks <= 10:
         box_height = 40
         spacing = 5
@@ -142,18 +142,13 @@ def create_graphic(album_cover, album_name, artist_name, tracks, ratings):
         box_height = 30
         spacing = 4
     elif num_tracks <= 30:
-        box_height = 25
+        box_height = 20
         spacing = 3
     else:
-        total_space = 600  # Total vertical space for tracks
-        box_height = max(total_space // num_tracks, 15)
+        box_height = max(total_track_area // num_tracks, 15)
         spacing = 2
 
-    # Ensure all tracks fit within the graphic
-    max_tracklist_height = tracklist_start_y + (num_tracks * (box_height + spacing))
-    if max_tracklist_height > 700:  # Adjust tracklist start to avoid overflow
-        tracklist_start_y = 310
-
+    # Draw each track with fixed spacing
     for i, (track, rating) in enumerate(zip(tracks, ratings), start=1):
         y = tracklist_start_y + (i - 1) * (box_height + spacing)
         rating_label = rating_map[rating]
@@ -161,11 +156,8 @@ def create_graphic(album_cover, album_name, artist_name, tracks, ratings):
         draw.rectangle([30, y, 530, y + box_height], fill=fill_color, outline="black", width=3)
         draw.text((40, y + 5), f"{i}. {track}", fill="black", font=track_font)
 
-    # Fixed Rating Key Position (directly below album rating)
-    key_start_y = 310 + (num_tracks * (box_height + spacing)) + 10
-    if key_start_y + 180 > 800:  # Ensure the key fits within the graphic
-        key_start_y = 750 - 180  # Adjust to fit if needed
-
+    # Fixed Rating Key Position (directly below the tracklist area)
+    key_start_y = tracklist_start_y + total_track_area + 10
     for label, color in rating_colors.items():
         value = next((k for k, v in rating_map.items() if v == label), None)
         draw.rectangle([550, key_start_y, 750, key_start_y + 30], fill=color, outline="black", width=3)
@@ -178,9 +170,6 @@ def create_graphic(album_cover, album_name, artist_name, tracks, ratings):
     image.save(buffer, format="PNG")
     buffer.seek(0)
     return buffer
-
-
-
 
 def main():
     st.title("Album Rating App")
