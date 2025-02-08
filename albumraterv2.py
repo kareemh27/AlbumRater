@@ -133,8 +133,8 @@ def create_graphic(album_cover, album_name, artist_name, tracks, ratings):
     draw.rectangle([550, 40, 750, 240], outline="black", width=3)
 
     # Album Rating
-    avg_rating = sum(rating for rating, is_skit in ratings if not is_skit) / max(
-        len([r for r, is_skit in ratings if not is_skit]), 1
+    avg_rating = sum(rating for rating, is_skit, _, _ in ratings if not is_skit) / max(
+        len([r for r, is_skit, _, _ in ratings if not is_skit]), 1
     )
     draw.rectangle([550, 250, 750, 300], fill="#E6E6FA", outline="black", width=3)
     draw.text((560, 260), f"Rating: {round(avg_rating, 2)}/10", fill="black", font=bold_font)
@@ -160,7 +160,7 @@ def create_graphic(album_cover, album_name, artist_name, tracks, ratings):
             worst_songs.append(track)
 
     # Rating Key
-    key_start_y = 310
+    key_start_y = 310 + (len(tracks) * y_spacing) + 20
     for label, color in rating_colors.items():
         draw.rectangle([550, key_start_y, 750, key_start_y + 30], fill=color, outline="black", width=3)
         draw.text((560, key_start_y + 5), label, fill="black", font=bold_font)
