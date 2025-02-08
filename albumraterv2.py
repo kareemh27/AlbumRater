@@ -259,8 +259,9 @@ def main():
         except Exception as e:
             st.error(f"An error occurred while generating the graphic: {e}")
 
-    if __name__ == "__main__":
-        main()
+if __name__ == "__main__":
+    main()
+
 
 
 
