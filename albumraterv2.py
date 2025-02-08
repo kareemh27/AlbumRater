@@ -57,6 +57,15 @@ def categorize_rating(rating):
         return "Amazing", "#32CD32"
 
 def create_graphic(album_cover, album_name, artist_name, tracks, ratings):
+    rating_colors = {
+        "Amazing": "#32CD32",
+        "Great": "#00BFFF",
+        "Good": "#FFD700",
+        "Meh": "#FFA500",
+        "Bad": "#FF4500",
+        "Skit": "#808080",
+    }
+    
     response = requests.get(album_cover)
     album_image = Image.open(io.BytesIO(response.content)).resize((800, 800))
     blurred_background = album_image.filter(ImageFilter.GaussianBlur(20))
@@ -65,10 +74,21 @@ def create_graphic(album_cover, album_name, artist_name, tracks, ratings):
     image.paste(blurred_background, (0, 0))
     draw = ImageDraw.Draw(image)
     
-    for i, (track, rating) in enumerate(zip(tracks, ratings)):
-        category, color = categorize_rating(rating)
-        draw.rectangle([30, 170 + i * 40, 530, 200 + i * 40], fill=color, outline="black", width=3)
-        draw.text((40, 175 + i * 40), f"{track} ({rating:.1f}) - {category}", fill="black")
+    title_font = ImageFont.load_default()
+    track_font = ImageFont.load_default()
+    bold_font = ImageFont.load_default()
+    
+    avg_rating = sum(ratings) / len(ratings) if ratings else 0
+    draw.text((560, 260), f"Rating: {round(avg_rating, 2)}/10", fill="black", font=bold_font)
+    
+    tracklist_start_y = 170
+    y_spacing = max(600 // max(len(tracks), 1), 20)
+    
+    for i, (track, rating) in enumerate(zip(tracks, ratings), start=1):
+        y = tracklist_start_y + i * y_spacing
+        category, fill_color = categorize_rating(rating)
+        draw.rectangle([30, y, 530, y + y_spacing - 5], fill=fill_color, outline="black", width=3)
+        draw.text((40, y), f"{i}. {track}", fill="black", font=track_font)
     
     buffer = io.BytesIO()
     image.save(buffer, format="PNG")
@@ -115,4 +135,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
