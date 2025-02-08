@@ -28,18 +28,16 @@ def get_spotify_token():
         st.error(f"Authentication failed: {error_message}")
         return None
 
-import re  # Import regex module
+import re  # Import regex module for text cleaning
 
 def clean_track_name(track_name):
-    """Removes featured artists from track names."""
-    track_name = re.sub(r"\(feat\..*?\)", "", track_name, flags=re.IGNORECASE)  # Remove (feat. Artist)
-    track_name = re.sub(r"\(ft\..*?\)", "", track_name, flags=re.IGNORECASE)  # Remove (ft. Artist)
-    track_name = re.sub(r"\[feat\..*?\]", "", track_name, flags=re.IGNORECASE)  # Remove [feat. Artist]
-    track_name = re.sub(r"\[ft\..*?\]", "", track_name, flags=re.IGNORECASE)  # Remove [ft. Artist]
-    track_name = re.sub(r"feat\..*", "", track_name, flags=re.IGNORECASE)  # Remove "feat. Artist" at the end
-    track_name = re.sub(r"ft\..*", "", track_name, flags=re.IGNORECASE)  # Remove "ft. Artist" at the end
-    track_name = re.sub(r"\(feat .*?\)", "", track_name, flags=re.IGNORECASE)  # Remove (feat Artist)
-    track_name = re.sub(r"\(with .*?\)", "", track_name, flags=re.IGNORECASE)  # Remove (with Artist)
+    """Removes featured and with artists from track names without removing valid 'with' in titles."""
+    track_name = re.sub(r"\(feat[^\)]+\)", "", track_name, flags=re.IGNORECASE)  # Remove (feat Artist)
+    track_name = re.sub(r"\(with [^\)]+\)", "", track_name, flags=re.IGNORECASE)  # Remove (with Artist)
+    track_name = re.sub(r"\[feat[^\]]+\]", "", track_name, flags=re.IGNORECASE)  # Remove [feat Artist]
+    track_name = re.sub(r"\[with [^\]]+\]", "", track_name, flags=re.IGNORECASE)  # Remove [with Artist]
+    track_name = re.sub(r"feat[^\)]+$", "", track_name, flags=re.IGNORECASE)     # Remove feat Artist at the end
+    track_name = re.sub(r"with [^\)]+$", "", track_name, flags=re.IGNORECASE)     # Remove with Artist at the end
     return track_name.strip()
 
 def fetch_album_tracks(token, artist_name, album_name):
@@ -59,11 +57,12 @@ def fetch_album_tracks(token, artist_name, album_name):
         if data["albums"]["items"]:
             album_id = data["albums"]["items"][0]["id"]
             album_cover = data["albums"]["items"][0]["images"][0]["url"]
-            tracks_url = f"https://api.spotify.com/v1/albums/{album_id}/tracks?limit=30"  # Increased limit to 30
+            tracks_url = f"https://api.spotify.com/v1/albums/{album_id}/tracks?limit=30"
             tracks_response = requests.get(tracks_url, headers=headers)
             if tracks_response.status_code == 200:
                 tracks_data = tracks_response.json()
-                return [track["name"] for track in tracks_data["items"]], album_cover
+                # Clean track names
+                return [clean_track_name(track["name"]) for track in tracks_data["items"]], album_cover
     return [], None
     
 # Define paths to the Arial font files
