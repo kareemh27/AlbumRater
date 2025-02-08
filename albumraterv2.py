@@ -81,7 +81,7 @@ def get_font(size, bold=False):
         print(f"⚠️ Font file not found: {font_path}, using default font.")
         return ImageFont.load_default()
         
-ddef create_graphic(album_cover, album_name, artist_name, tracks, ratings):
+def create_graphic(album_cover, album_name, artist_name, tracks, ratings):
     rating_colors = {
         "Amazing": "#32CD32",  # Green
         "Great": "#00BFFF",    # Blue
