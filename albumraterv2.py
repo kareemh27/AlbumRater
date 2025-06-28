@@ -184,20 +184,20 @@ def create_graphic(album_cover, album_name, artist_name, tracks, ratings):
     draw = ImageDraw.Draw(image)
 
     def load_font(font_filename, size):
-    try:
-        return ImageFont.truetype(str(FONT_DIR / font_filename), size)
-    except IOError:
-        return ImageFont.load_default()
-
-artist_font = load_font("arialbd.ttf", 38)   # Bold
-album_font = load_font("ariali.ttf", 30)     # Italic
-rating_font = load_font("arial.ttf", 22)
-
-track_count = len(tracks)
-track_font_size = 15 if track_count >= 25 else 18
-track_font = load_font("arialbd.ttf", track_font_size)
-
-key_font = load_font("arialbd.ttf", 22)
+        try:
+            return ImageFont.truetype(str(FONT_DIR / font_filename), size)
+        except IOError:
+            return ImageFont.load_default()
+    
+    artist_font = load_font("arialbd.ttf", 38)   # Bold
+    album_font = load_font("ariali.ttf", 30)     # Italic
+    rating_font = load_font("arial.ttf", 22)
+    
+    track_count = len(tracks)
+    track_font_size = 15 if track_count >= 25 else 18
+    track_font = load_font("arialbd.ttf", track_font_size)
+    
+    key_font = load_font("arialbd.ttf", 22)
 
     lavender = "#E6E6FA"
     text_color = "black"
