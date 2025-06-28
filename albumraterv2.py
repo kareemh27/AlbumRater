@@ -4,6 +4,10 @@ from PIL import Image, ImageDraw, ImageFont, ImageFilter
 import io
 import base64
 import re
+from pathlib import Path
+
+# Font directory
+FONT_DIR = Path("fonts")
 
 def clean_track_name(name):
     # Remove (feat. ...), [feat. ...], (with ...), [with ...]
@@ -179,22 +183,21 @@ def create_graphic(album_cover, album_name, artist_name, tracks, ratings):
     image.paste(blurred)
     draw = ImageDraw.Draw(image)
 
-    # Load fonts with graceful fallback
+    def load_font(font_filename, size):
     try:
-        artist_font = ImageFont.truetype("arialbd.ttf", 38)   # bold
-        album_font = ImageFont.truetype("ariali.ttf", 30)     # italic
-        rating_font = ImageFont.truetype("arial.ttf", 22)
-        track_count = len(tracks)
-        track_font_size = 15 if track_count >= 25 else 18
-        
-        try:
-            track_font = ImageFont.truetype("arialbd.ttf", track_font_size)
-        except IOError:
-            track_font = ImageFont.load_default()
-
-        key_font = ImageFont.truetype("arialbd.ttf", 22)
+        return ImageFont.truetype(str(FONT_DIR / font_filename), size)
     except IOError:
-        artist_font = album_font = rating_font = track_font = key_font = ImageFont.load_default()
+        return ImageFont.load_default()
+
+artist_font = load_font("arialbd.ttf", 38)   # Bold
+album_font = load_font("ariali.ttf", 30)     # Italic
+rating_font = load_font("arial.ttf", 22)
+
+track_count = len(tracks)
+track_font_size = 15 if track_count >= 25 else 18
+track_font = load_font("arialbd.ttf", track_font_size)
+
+key_font = load_font("arialbd.ttf", 22)
 
     lavender = "#E6E6FA"
     text_color = "black"
